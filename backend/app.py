@@ -11,6 +11,7 @@ import os
 
 from config import config
 from rag_system import RAGSystem
+from mock_ai_generator import MockAIGenerator
 
 # Initialize FastAPI app
 app = FastAPI(title="Course Materials RAG System", root_path="")
@@ -31,8 +32,9 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Initialize RAG system
-rag_system = RAGSystem(config)
+# Initialize RAG system with mock AI generator
+mock_ai = MockAIGenerator("This is a mock response from the AI system.")
+rag_system = RAGSystem(config, ai_generator=mock_ai)
 
 # Pydantic models for request/response
 class QueryRequest(BaseModel):

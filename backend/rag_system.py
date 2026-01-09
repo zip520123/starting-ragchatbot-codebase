@@ -2,7 +2,6 @@ from typing import List, Tuple, Optional, Dict
 import os
 from document_processor import DocumentProcessor
 from vector_store import VectorStore
-from ai_generator import AIGenerator
 from session_manager import SessionManager
 from search_tools import ToolManager, CourseSearchTool
 from models import Course, Lesson, CourseChunk
@@ -10,14 +9,14 @@ from models import Course, Lesson, CourseChunk
 class RAGSystem:
     """Main orchestrator for the Retrieval-Augmented Generation system"""
     
-    def __init__(self, config):
+    def __init__(self, config, ai_generator):
         self.config = config
-        
+
         # Initialize core components
         self.document_processor = DocumentProcessor(config.CHUNK_SIZE, config.CHUNK_OVERLAP)
         self.vector_store = VectorStore(config.CHROMA_PATH, config.EMBEDDING_MODEL, config.MAX_RESULTS)
-        self.ai_generator = AIGenerator(config.ANTHROPIC_API_KEY, config.ANTHROPIC_MODEL)
         self.session_manager = SessionManager(config.MAX_HISTORY)
+        self.ai_generator = ai_generator
         
         # Initialize search tools
         self.tool_manager = ToolManager()
