@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(export PATH=\"$HOME/.local/bin:$PATH\")",
+      "Bash(uv sync:*)",
+      "Bash(uv python pin:*)",
+      "Bash(uv run:*)",
+      "Bash(curl:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(timeout 10 uv run:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

@@ -1,0 +1,67 @@
+Here is an ASCII diagram illustrating the application flow.
+
+### Flow 1: Document Ingestion (on Application Startup)
+
++---------------------+      +---------------------------+      +------------------------------+
+|    docs/ Folder     |----->|    Document Processor     |----->|    VectorStore (ChromaDB)    |
+| (txt, pdf files)    |      |  (Splits into chunks)     |      |    (Stores as vectors)       |
++---------------------+      +---------------------------+      +------------------------------+
+                             | document_processor.py     |      | vector_store.py              |
+                             | - process_course_document |      | - add_course_metadata()      |
+                             | - chunk_text()            |      | - add_course_content()       |
+                             +---------------------------+      +------------------------------+
+
+Triggered by: backend/app.py → startup_event() → rag_system.add_course_folder()
+
+
+### Flow 2: Answering a User's Question
+
++------+       +-------------------+       +-------------------------+
+| User |------>|     Frontend      |------>|   Backend (FastAPI)     |
++------+       |   (Web Browser)   |       |   /api/query            |
+               +-------------------+       +------------+------------+
+               | frontend/         |       | backend/app.py          |
+               | - index.html      |       | - query_documents()     |
+               | - script.js       |       +------------+------------+
+               |   sendMessage()   |                    |
+               +-------------------+                    v
++---------------------------+      +---------------------------+      +------------------------------+
+|       AIGenerator         |<---->|        RAG System         |<---->|    VectorStore (ChromaDB)    |
+|    (Anthropic Model)      |      |      (Orchestrator)       |      |   (Searches for chunks)      |
++---------------------------+      +---------------------------+      +------------------------------+
+| backend/ai_generator.py   |      | backend/rag_system.py     |      | backend/vector_store.py      |
+| - generate_response()     |      | - query()                 |      | - search()                   |
+| - _handle_tool_execution()|      | - add_course_document()   |      | - _resolve_course_name()     |
++---------------------------+      +---------------------------+      +------------------------------+
+                                              |
+           +----------------------------------+
+           |
+           |   Also uses:
+           |   - backend/search_tools.py → CourseSearchTool.execute()
+           |   - backend/session_manager.py → get_conversation_history()
+           |
+           v
++-------------------------+
+|   Backend (FastAPI)     |
+|   (Returns Response)    |
++-----------+-------------+
+| backend/app.py          |
+| - QueryResponse model   |
++-----------+-------------+
+            |
+            v
++-------------------+       +------+
+|     Frontend      |------>| User |
+| (Displays Answer) |       |      |
++-------------------+       +------+
+| frontend/script.js|
+| - addMessage()    |
++-------------------+
+
+
+### Configuration
+backend/config.py:
+  - ANTHROPIC_MODEL: claude-sonnet-4-20250514
+  - EMBEDDING_MODEL: all-MiniLM-L6-v2
+  - CHUNK_SIZE: 800, CHUNK_OVERLAP: 100
+  - MAX_RESULTS: 5, MAX_HISTORY: 2
