@@ -11,7 +11,12 @@
       "Bash(timeout 10 uv run:*)",
       "Bash(cat:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git worktree:*)",
+      "Bash(gh auth status:*)",
+      "Bash(gh repo fork:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(git pull:*)"
     ]
   }
 }
