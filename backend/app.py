@@ -11,6 +11,7 @@ import os
 
 from config import config
 from rag_system import RAGSystem
+from ai_generator import AIGenerator
 from mock_ai_generator import MockAIGenerator
 
 # Initialize FastAPI app
@@ -32,9 +33,18 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Initialize RAG system with mock AI generator
-mock_ai = MockAIGenerator("This is a mock response from the AI system.")
-rag_system = RAGSystem(config, ai_generator=mock_ai)
+# Initialize AI generator - use real one if API key available, otherwise mock
+if config.ANTHROPIC_API_KEY:
+    print("Using real AIGenerator with Anthropic API")
+    ai_generator = AIGenerator(api_key=config.ANTHROPIC_API_KEY, model=config.ANTHROPIC_MODEL)
+else:
+    print("WARNING: No ANTHROPIC_API_KEY found. Using MockAIGenerator (responses will be static).")
+    mock_response = """I'm currently running in mock mode without an API key.
+
+To get real responses, please set your ANTHROPIC_API_KEY environment variable."""
+    ai_generator = MockAIGenerator(mock_response, [])
+
+rag_system = RAGSystem(config, ai_generator=ai_generator)
 
 # Pydantic models for request/response
 class QueryRequest(BaseModel):
@@ -117,5 +127,5 @@ class DevStaticFiles(StaticFiles):
         return response
     
     
-# Serve static files for the frontend
-app.mount("/", StaticFiles(directory="../frontend", html=True), name="static")
+# Serve static files for the frontend (with no-cache for development)
+app.mount("/", DevStaticFiles(directory="../frontend", html=True), name="static")

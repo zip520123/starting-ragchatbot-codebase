@@ -1,0 +1,49 @@
+Here is a step-by-step breakdown of the application flow:
+
+### Flow 1: Document Ingestion (on Application Startup)
+
+1.  **Application Starts**
+    *   The backend server (FastAPI) is initiated.
+
+2.  **Load Documents**
+    *   The backend automatically triggers the RAG (Retrieval-Augmented Generation) system to load course materials.
+    *   It scans the `docs/` folder for any text, PDF, or Word documents.
+
+3.  **Process Documents**
+    *   For each new document found, the `DocumentProcessor` reads the content.
+    *   It splits the text into smaller, manageable chunks.
+
+4.  **Store in Vector Database**
+    *   Each chunk is converted into a numerical representation (an embedding) that captures its meaning.
+    *   These embeddings are stored in the `VectorStore` (ChromaDB), creating a searchable knowledge base.
+
+---
+
+### Flow 2: Answering a User's Question
+
+1.  **User Asks a Question**
+    *   The user types a question into the frontend (the web page) and hits "send".
+
+2.  **Frontend Sends Request**
+    *   The frontend sends the user's question to the `/api/query` endpoint on the backend server.
+
+3.  **Backend Receives Request**
+    *   The `RAGSystem` receives the question.
+
+4.  **AI Determines Information Need**
+    *   The `AIGenerator` (the Anthropic AI model) receives the question and a list of available tools, including a `CourseSearchTool`.
+    *   The AI determines that to answer the question, it needs to search the course documents.
+
+5.  **Search the Knowledge Base**
+    *   The AI uses the `CourseSearchTool`.
+    *   The tool converts the user's question into an embedding and searches the `VectorStore` for the most relevant document chunks from the knowledge base.
+
+6.  **AI Generates an Answer**
+    *   The most relevant document chunks are passed back to the `AIGenerator`.
+    *   The AI uses these chunks, along with its general knowledge and the conversation history, to formulate a comprehensive answer.
+
+7.  **Backend Responds**
+    *   The backend sends the final answer and a list of the source documents it used back to the frontend.
+
+8.  **Frontend Displays Answer**
+    *   The frontend displays the answer and its sources to the user.
