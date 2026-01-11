@@ -7,7 +7,9 @@ class MockAIGenerator:
         self.last_query = None
         self.call_count = 0
 
-    def generate_response(self, query, conversation_history=None, tools=None, tool_manager=None):
+    def generate_response(
+        self, query, conversation_history=None, tools=None, tool_manager=None
+    ):
         """Return mock response and track call information."""
         self.last_query = query
         self.call_count += 1
@@ -15,7 +17,7 @@ class MockAIGenerator:
         # Set mock sources on the tool_manager's search tool
         if tool_manager and self.mock_sources:
             for tool in tool_manager.tools.values():
-                if hasattr(tool, 'last_sources'):
+                if hasattr(tool, "last_sources"):
                     tool.last_sources = self.mock_sources
                     break
 

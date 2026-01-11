@@ -1,10 +1,12 @@
 """Tests for CourseSearchTool execute method outputs."""
-import pytest
-import sys
+
 import os
+import sys
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from search_tools import CourseSearchTool, ToolManager
 from vector_store import SearchResults
@@ -18,8 +20,10 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content about MCP protocol."],
-            metadata=[{"course_title": "MCP Course", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.2]
+            metadata=[
+                {"course_title": "MCP Course", "lesson_number": 1, "chunk_index": 0}
+            ],
+            distances=[0.2],
         )
         mock_vector_store.get_lesson_link.return_value = "https://example.com/lesson1"
 
@@ -32,9 +36,7 @@ class TestCourseSearchToolExecute:
         assert "[MCP Course - Lesson 1]" in result
         assert "Content about MCP protocol." in result
         mock_vector_store.search.assert_called_once_with(
-            query="MCP protocol",
-            course_name=None,
-            lesson_number=None
+            query="MCP protocol", course_name=None, lesson_number=None
         )
 
     def test_execute_with_course_filter(self, mock_vector_store):
@@ -42,8 +44,14 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Filtered content."],
-            metadata=[{"course_title": "Specific Course", "lesson_number": 2, "chunk_index": 0}],
-            distances=[0.15]
+            metadata=[
+                {
+                    "course_title": "Specific Course",
+                    "lesson_number": 2,
+                    "chunk_index": 0,
+                }
+            ],
+            distances=[0.15],
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -52,9 +60,7 @@ class TestCourseSearchToolExecute:
 
         # Assert
         mock_vector_store.search.assert_called_once_with(
-            query="topic",
-            course_name="Specific Course",
-            lesson_number=None
+            query="topic", course_name="Specific Course", lesson_number=None
         )
         assert "[Specific Course - Lesson 2]" in result
 
@@ -64,7 +70,7 @@ class TestCourseSearchToolExecute:
         mock_vector_store.search.return_value = SearchResults(
             documents=["Lesson specific content."],
             metadata=[{"course_title": "Course", "lesson_number": 3, "chunk_index": 0}],
-            distances=[0.1]
+            distances=[0.1],
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -73,9 +79,7 @@ class TestCourseSearchToolExecute:
 
         # Assert
         mock_vector_store.search.assert_called_once_with(
-            query="topic",
-            course_name=None,
-            lesson_number=3
+            query="topic", course_name=None, lesson_number=3
         )
 
     def test_execute_with_both_filters(self, mock_vector_store):
@@ -83,8 +87,10 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Specific content."],
-            metadata=[{"course_title": "MCP Course", "lesson_number": 2, "chunk_index": 0}],
-            distances=[0.05]
+            metadata=[
+                {"course_title": "MCP Course", "lesson_number": 2, "chunk_index": 0}
+            ],
+            distances=[0.05],
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -93,9 +99,7 @@ class TestCourseSearchToolExecute:
 
         # Assert
         mock_vector_store.search.assert_called_once_with(
-            query="servers",
-            course_name="MCP",
-            lesson_number=2
+            query="servers", course_name="MCP", lesson_number=2
         )
 
     def test_execute_returns_error_message_on_search_error(self, mock_vector_store):
@@ -105,7 +109,7 @@ class TestCourseSearchToolExecute:
             documents=[],
             metadata=[],
             distances=[],
-            error="No course found matching 'nonexistent'"
+            error="No course found matching 'nonexistent'",
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -119,9 +123,7 @@ class TestCourseSearchToolExecute:
         """Test that execute returns appropriate message for empty results."""
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[]
+            documents=[], metadata=[], distances=[]
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -135,9 +137,7 @@ class TestCourseSearchToolExecute:
         """Test empty results message includes course filter info."""
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[]
+            documents=[], metadata=[], distances=[]
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -152,9 +152,7 @@ class TestCourseSearchToolExecute:
         """Test empty results message includes lesson filter info."""
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
-            documents=[],
-            metadata=[],
-            distances=[]
+            documents=[], metadata=[], distances=[]
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -170,10 +168,14 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content here."],
-            metadata=[{"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.2]
+            metadata=[
+                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0}
+            ],
+            distances=[0.2],
         )
-        mock_vector_store.get_lesson_link.return_value = "https://example.com/test-lesson-1"
+        mock_vector_store.get_lesson_link.return_value = (
+            "https://example.com/test-lesson-1"
+        )
         tool = CourseSearchTool(mock_vector_store)
 
         # Act
@@ -189,8 +191,10 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content here."],
-            metadata=[{"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.2]
+            metadata=[
+                {"course_title": "Test Course", "lesson_number": 1, "chunk_index": 0}
+            ],
+            distances=[0.2],
         )
         mock_vector_store.get_lesson_link.return_value = None
         tool = CourseSearchTool(mock_vector_store)
@@ -210,9 +214,9 @@ class TestCourseSearchToolExecute:
             metadata=[
                 {"course_title": "Course A", "lesson_number": 1, "chunk_index": 0},
                 {"course_title": "Course B", "lesson_number": 2, "chunk_index": 1},
-                {"course_title": "Course A", "lesson_number": 3, "chunk_index": 2}
+                {"course_title": "Course A", "lesson_number": 3, "chunk_index": 2},
             ],
-            distances=[0.1, 0.2, 0.3]
+            distances=[0.1, 0.2, 0.3],
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -233,8 +237,14 @@ class TestCourseSearchToolExecute:
         # Arrange
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content without lesson."],
-            metadata=[{"course_title": "General Course", "lesson_number": None, "chunk_index": 0}],
-            distances=[0.2]
+            metadata=[
+                {
+                    "course_title": "General Course",
+                    "lesson_number": None,
+                    "chunk_index": 0,
+                }
+            ],
+            distances=[0.2],
         )
         tool = CourseSearchTool(mock_vector_store)
 
@@ -301,7 +311,7 @@ class TestToolManager:
         mock_vector_store.search.return_value = SearchResults(
             documents=["Test content."],
             metadata=[{"course_title": "Test", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.1]
+            distances=[0.1],
         )
         manager = ToolManager()
         tool = CourseSearchTool(mock_vector_store)
@@ -324,7 +334,7 @@ class TestToolManager:
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content."],
             metadata=[{"course_title": "Test", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.1]
+            distances=[0.1],
         )
         mock_vector_store.get_lesson_link.return_value = "https://example.com"
         manager = ToolManager()
@@ -341,7 +351,7 @@ class TestToolManager:
         mock_vector_store.search.return_value = SearchResults(
             documents=["Content."],
             metadata=[{"course_title": "Test", "lesson_number": 1, "chunk_index": 0}],
-            distances=[0.1]
+            distances=[0.1],
         )
         manager = ToolManager()
         tool = CourseSearchTool(mock_vector_store)

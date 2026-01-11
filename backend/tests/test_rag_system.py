@@ -1,10 +1,12 @@
 """Tests for RAG system query handling."""
-import pytest
-import sys
-import os
-from unittest.mock import Mock, patch, MagicMock
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import os
+import sys
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestRAGSystemQueryHandling:
@@ -32,9 +34,11 @@ class TestRAGSystemQueryHandling:
     @pytest.fixture
     def rag_system(self, mock_config, mock_ai_generator):
         """Create RAGSystem with mocked dependencies."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore') as mock_vs, \
-             patch('rag_system.SessionManager') as mock_sm:
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore") as mock_vs,
+            patch("rag_system.SessionManager") as mock_sm,
+        ):
 
             # Setup mock vector store
             mock_vector_store = Mock()
@@ -48,6 +52,7 @@ class TestRAGSystemQueryHandling:
             mock_sm.return_value = mock_session_manager
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai_generator)
             system.vector_store = mock_vector_store
             system.session_manager = mock_session_manager
@@ -93,12 +98,14 @@ class TestRAGSystemQueryHandling:
         call_kwargs = mock_ai_generator.generate_response.call_args[1]
         assert "How do MCP servers work?" in call_kwargs["query"]
 
-    def test_query_retrieves_sources_from_tool_manager(self, rag_system, mock_ai_generator):
+    def test_query_retrieves_sources_from_tool_manager(
+        self, rag_system, mock_ai_generator
+    ):
         """Test that sources are retrieved from tool manager after query."""
         # Arrange
-        rag_system.tool_manager.get_last_sources = Mock(return_value=[
-            "[MCP Course - Lesson 1](https://example.com)"
-        ])
+        rag_system.tool_manager.get_last_sources = Mock(
+            return_value=["[MCP Course - Lesson 1](https://example.com)"]
+        )
 
         # Act
         response, sources = rag_system.query("What is MCP?")
@@ -122,13 +129,17 @@ class TestRAGSystemQueryHandling:
     def test_query_with_session_retrieves_history(self, rag_system, mock_ai_generator):
         """Test that query retrieves conversation history for session."""
         # Arrange
-        rag_system.session_manager.get_conversation_history.return_value = "Previous conversation"
+        rag_system.session_manager.get_conversation_history.return_value = (
+            "Previous conversation"
+        )
 
         # Act
         rag_system.query("Follow up question", session_id="session-123")
 
         # Assert
-        rag_system.session_manager.get_conversation_history.assert_called_with("session-123")
+        rag_system.session_manager.get_conversation_history.assert_called_with(
+            "session-123"
+        )
         call_kwargs = mock_ai_generator.generate_response.call_args[1]
         assert call_kwargs["conversation_history"] == "Previous conversation"
 
@@ -156,7 +167,9 @@ class TestRAGSystemQueryHandling:
         assert "What is MCP?" in call_args[1]
         assert call_args[2] == "This is the AI response about MCP."
 
-    def test_query_does_not_update_history_without_session(self, rag_system, mock_ai_generator):
+    def test_query_does_not_update_history_without_session(
+        self, rag_system, mock_ai_generator
+    ):
         """Test that query without session_id doesn't update history."""
         # Arrange
         rag_system.session_manager.add_exchange = Mock()
@@ -190,33 +203,42 @@ class TestRAGSystemToolRegistration:
 
     def test_search_tool_is_registered(self, mock_config, mock_ai_generator):
         """Test that CourseSearchTool is registered."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore'), \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore"),
+            patch("rag_system.SessionManager"),
+        ):
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai_generator)
 
             assert "search_course_content" in system.tool_manager.tools
 
     def test_outline_tool_is_registered(self, mock_config, mock_ai_generator):
         """Test that CourseOutlineTool is registered."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore'), \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore"),
+            patch("rag_system.SessionManager"),
+        ):
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai_generator)
 
             assert "get_course_outline" in system.tool_manager.tools
 
     def test_tool_definitions_available(self, mock_config, mock_ai_generator):
         """Test that tool definitions are available for API calls."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore'), \
-             patch('rag_system.SessionManager'):
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore"),
+            patch("rag_system.SessionManager"),
+        ):
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai_generator)
 
             definitions = system.tool_manager.get_tool_definitions()
@@ -244,9 +266,11 @@ class TestRAGSystemIntegration:
 
     def test_end_to_end_query_flow(self, mock_config):
         """Test complete query flow from user question to response."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore') as mock_vs, \
-             patch('rag_system.SessionManager') as mock_sm:
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore") as mock_vs,
+            patch("rag_system.SessionManager") as mock_sm,
+        ):
 
             # Setup mocks
             mock_vector_store = Mock()
@@ -259,9 +283,12 @@ class TestRAGSystemIntegration:
 
             # Create mock AI generator that simulates tool use
             mock_ai = Mock()
-            mock_ai.generate_response.return_value = "MCP servers provide external tool access for AI models."
+            mock_ai.generate_response.return_value = (
+                "MCP servers provide external tool access for AI models."
+            )
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai)
 
             # Execute query
@@ -279,17 +306,24 @@ class TestRAGSystemIntegration:
 
     def test_query_with_empty_sources(self, mock_config):
         """Test query handling when no sources are found."""
-        with patch('rag_system.DocumentProcessor'), \
-             patch('rag_system.VectorStore') as mock_vs, \
-             patch('rag_system.SessionManager') as mock_sm:
+        with (
+            patch("rag_system.DocumentProcessor"),
+            patch("rag_system.VectorStore") as mock_vs,
+            patch("rag_system.SessionManager") as mock_sm,
+        ):
 
             mock_vs.return_value = Mock(max_results=5)
-            mock_sm.return_value = Mock(get_conversation_history=Mock(return_value=None))
+            mock_sm.return_value = Mock(
+                get_conversation_history=Mock(return_value=None)
+            )
 
             mock_ai = Mock()
-            mock_ai.generate_response.return_value = "I couldn't find specific information about that topic."
+            mock_ai.generate_response.return_value = (
+                "I couldn't find specific information about that topic."
+            )
 
             from rag_system import RAGSystem
+
             system = RAGSystem(mock_config, mock_ai)
 
             # Ensure tool manager returns empty sources

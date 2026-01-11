@@ -1,9 +1,11 @@
 """Tests for FastAPI endpoints."""
-import pytest
-import sys
-import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import os
+import sys
+
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 
 class TestQueryEndpoint:
@@ -11,19 +13,13 @@ class TestQueryEndpoint:
 
     def test_query_returns_200_with_valid_request(self, test_client):
         """Test successful query returns 200 status code."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         assert response.status_code == 200
 
     def test_query_returns_answer_in_response(self, test_client):
         """Test query response includes answer field."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         data = response.json()
         assert "answer" in data
@@ -31,10 +27,7 @@ class TestQueryEndpoint:
 
     def test_query_returns_sources_in_response(self, test_client):
         """Test query response includes sources field."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         data = response.json()
         assert "sources" in data
@@ -42,10 +35,7 @@ class TestQueryEndpoint:
 
     def test_query_returns_session_id(self, test_client):
         """Test query response includes session_id."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         data = response.json()
         assert "session_id" in data
@@ -53,10 +43,7 @@ class TestQueryEndpoint:
 
     def test_query_creates_session_when_not_provided(self, test_client, test_app):
         """Test that a new session is created when session_id is not provided."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         data = response.json()
         # Should have created a session
@@ -67,7 +54,7 @@ class TestQueryEndpoint:
         """Test that provided session_id is used."""
         response = test_client.post(
             "/api/query",
-            json={"query": "What is MCP?", "session_id": "my-existing-session"}
+            json={"query": "What is MCP?", "session_id": "my-existing-session"},
         )
 
         data = response.json()
@@ -79,51 +66,41 @@ class TestQueryEndpoint:
         """Test that RAG system query is called with correct arguments."""
         test_client.post(
             "/api/query",
-            json={"query": "Tell me about MCP servers", "session_id": "session-xyz"}
+            json={"query": "Tell me about MCP servers", "session_id": "session-xyz"},
         )
 
         test_app.state.rag_system.query.assert_called_once_with(
-            "Tell me about MCP servers",
-            "session-xyz"
+            "Tell me about MCP servers", "session-xyz"
         )
 
     def test_query_returns_422_for_missing_query(self, test_client):
         """Test that missing query field returns 422 validation error."""
-        response = test_client.post(
-            "/api/query",
-            json={}
-        )
+        response = test_client.post("/api/query", json={})
 
         assert response.status_code == 422
 
     def test_query_returns_422_for_empty_body(self, test_client):
         """Test that empty request body returns 422."""
         response = test_client.post(
-            "/api/query",
-            content="",
-            headers={"Content-Type": "application/json"}
+            "/api/query", content="", headers={"Content-Type": "application/json"}
         )
 
         assert response.status_code == 422
 
     def test_query_returns_500_on_rag_system_error(self, test_client, test_app):
         """Test that RAG system errors return 500 status code."""
-        test_app.state.rag_system.query.side_effect = Exception("Database connection failed")
-
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
+        test_app.state.rag_system.query.side_effect = Exception(
+            "Database connection failed"
         )
+
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         assert response.status_code == 500
         assert "Database connection failed" in response.json()["detail"]
 
     def test_query_response_structure(self, test_client):
         """Test the complete structure of query response."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP?"}
-        )
+        response = test_client.post("/api/query", json={"query": "What is MCP?"})
 
         data = response.json()
         # Verify all required fields are present
@@ -177,7 +154,9 @@ class TestCoursesEndpoint:
 
     def test_courses_returns_500_on_error(self, test_client, test_app):
         """Test that analytics errors return 500 status code."""
-        test_app.state.rag_system.get_course_analytics.side_effect = Exception("ChromaDB error")
+        test_app.state.rag_system.get_course_analytics.side_effect = Exception(
+            "ChromaDB error"
+        )
 
         response = test_client.get("/api/courses")
 
@@ -227,7 +206,7 @@ class TestAPIErrorHandling:
         response = test_client.post(
             "/api/query",
             content="not valid json",
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
         )
 
         assert response.status_code == 422
@@ -237,7 +216,7 @@ class TestAPIErrorHandling:
         response = test_client.post(
             "/api/query",
             content="query=test",
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
 
         # FastAPI returns 422 for wrong content type
@@ -264,10 +243,7 @@ class TestQueryWithDifferentInputs:
         """Test query handles long input text."""
         long_query = "What is " + "MCP " * 100 + "servers?"
 
-        response = test_client.post(
-            "/api/query",
-            json={"query": long_query}
-        )
+        response = test_client.post("/api/query", json={"query": long_query})
 
         assert response.status_code == 200
 
@@ -275,7 +251,7 @@ class TestQueryWithDifferentInputs:
         """Test query handles special characters."""
         response = test_client.post(
             "/api/query",
-            json={"query": "What is MCP? How does it work? (including examples)"}
+            json={"query": "What is MCP? How does it work? (including examples)"},
         )
 
         assert response.status_code == 200
@@ -283,28 +259,21 @@ class TestQueryWithDifferentInputs:
     def test_query_with_unicode(self, test_client):
         """Test query handles unicode characters."""
         response = test_client.post(
-            "/api/query",
-            json={"query": "What is MCP? 你好 مرحبا 🚀"}
+            "/api/query", json={"query": "What is MCP? 你好 مرحبا 🚀"}
         )
 
         assert response.status_code == 200
 
     def test_query_with_empty_string(self, test_client):
         """Test query with empty string."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": ""}
-        )
+        response = test_client.post("/api/query", json={"query": ""})
 
         # Empty query should still be processed (validation is application-specific)
         assert response.status_code == 200
 
     def test_query_with_whitespace_only(self, test_client):
         """Test query with whitespace-only string."""
-        response = test_client.post(
-            "/api/query",
-            json={"query": "   "}
-        )
+        response = test_client.post("/api/query", json={"query": "   "})
 
         assert response.status_code == 200
 
@@ -316,14 +285,12 @@ class TestConcurrentSessions:
         """Test that different session IDs are handled independently."""
         # First query with session A
         test_client.post(
-            "/api/query",
-            json={"query": "First question", "session_id": "session-A"}
+            "/api/query", json={"query": "First question", "session_id": "session-A"}
         )
 
         # Second query with session B
         test_client.post(
-            "/api/query",
-            json={"query": "Second question", "session_id": "session-B"}
+            "/api/query", json={"query": "Second question", "session_id": "session-B"}
         )
 
         # Verify both calls were made with correct session IDs
@@ -339,8 +306,7 @@ class TestConcurrentSessions:
         # Multiple queries with same session
         for i in range(3):
             test_client.post(
-                "/api/query",
-                json={"query": f"Question {i}", "session_id": session_id}
+                "/api/query", json={"query": f"Question {i}", "session_id": session_id}
             )
 
         # All calls should have the same session ID

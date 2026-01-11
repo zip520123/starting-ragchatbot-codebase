@@ -1,29 +1,34 @@
 """Shared fixtures for RAG system tests."""
-import pytest
-import sys
+
 import os
-from unittest.mock import Mock, MagicMock, patch
+import sys
 from dataclasses import dataclass
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
 
 # Add backend to path for imports
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from vector_store import SearchResults
-
 
 # =============================================================================
 # API Testing Fixtures
 # =============================================================================
 
+
 @pytest.fixture
 def mock_rag_system():
     """Mock RAGSystem for API testing."""
     rag = Mock()
-    rag.query.return_value = ("This is a test response about MCP.", ["[MCP Course - Lesson 1](https://example.com)"])
+    rag.query.return_value = (
+        "This is a test response about MCP.",
+        ["[MCP Course - Lesson 1](https://example.com)"],
+    )
     rag.get_course_analytics.return_value = {
         "total_courses": 3,
-        "course_titles": ["MCP Course", "Python Basics", "Advanced AI"]
+        "course_titles": ["MCP Course", "Python Basics", "Advanced AI"],
     }
 
     # Mock session manager
@@ -64,9 +69,10 @@ def test_app(mock_rag_system):
     This fixture creates a minimal FastAPI app that mirrors the real app's
     endpoints but uses mocked RAGSystem to avoid static file mounting issues.
     """
+    from typing import List, Optional
+
     from fastapi import FastAPI, HTTPException
     from pydantic import BaseModel
-    from typing import List, Optional
 
     app = FastAPI(title="Test Course Materials RAG System")
 
@@ -96,11 +102,7 @@ def test_app(mock_rag_system):
 
             answer, sources = app.state.rag_system.query(request.query, session_id)
 
-            return QueryResponse(
-                answer=answer,
-                sources=sources,
-                session_id=session_id
-            )
+            return QueryResponse(answer=answer, sources=sources, session_id=session_id)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -110,7 +112,7 @@ def test_app(mock_rag_system):
             analytics = app.state.rag_system.get_course_analytics()
             return CourseStats(
                 total_courses=analytics["total_courses"],
-                course_titles=analytics["course_titles"]
+                course_titles=analytics["course_titles"],
             )
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
@@ -126,19 +128,22 @@ def test_app(mock_rag_system):
 def test_client(test_app):
     """Create a TestClient for the test app."""
     from fastapi.testclient import TestClient
+
     return TestClient(test_app)
 
 
 @pytest.fixture
 def mock_search_results():
     """Factory fixture to create SearchResults with custom data."""
+
     def _create(documents=None, metadata=None, distances=None, error=None):
         return SearchResults(
             documents=documents or [],
             metadata=metadata or [],
             distances=distances or [],
-            error=error
+            error=error,
         )
+
     return _create
 
 
@@ -148,13 +153,21 @@ def sample_search_results(mock_search_results):
     return mock_search_results(
         documents=[
             "MCP servers allow AI models to access external tools and data sources.",
-            "To create an MCP server, you need to implement the server protocol."
+            "To create an MCP server, you need to implement the server protocol.",
         ],
         metadata=[
-            {"course_title": "MCP: Build Rich-Context AI Apps", "lesson_number": 1, "chunk_index": 0},
-            {"course_title": "MCP: Build Rich-Context AI Apps", "lesson_number": 2, "chunk_index": 5}
+            {
+                "course_title": "MCP: Build Rich-Context AI Apps",
+                "lesson_number": 1,
+                "chunk_index": 0,
+            },
+            {
+                "course_title": "MCP: Build Rich-Context AI Apps",
+                "lesson_number": 2,
+                "chunk_index": 5,
+            },
         ],
-        distances=[0.25, 0.35]
+        distances=[0.25, 0.35],
     )
 
 
@@ -180,7 +193,7 @@ def mock_vector_store():
     store.search.return_value = SearchResults(
         documents=["Sample content about MCP servers."],
         metadata=[{"course_title": "MCP Course", "lesson_number": 1, "chunk_index": 0}],
-        distances=[0.2]
+        distances=[0.2],
     )
 
     # Default lesson link behavior
@@ -202,14 +215,18 @@ def mock_tool_manager():
                 "properties": {
                     "query": {"type": "string"},
                     "course_name": {"type": "string"},
-                    "lesson_number": {"type": "integer"}
+                    "lesson_number": {"type": "integer"},
                 },
-                "required": ["query"]
-            }
+                "required": ["query"],
+            },
         }
     ]
-    manager.execute_tool.return_value = "Search result: MCP servers provide external tool access."
-    manager.get_last_sources.return_value = ["[MCP Course - Lesson 1](https://example.com)"]
+    manager.execute_tool.return_value = (
+        "Search result: MCP servers provide external tool access."
+    )
+    manager.get_last_sources.return_value = [
+        "[MCP Course - Lesson 1](https://example.com)"
+    ]
     manager.reset_sources.return_value = None
     return manager
 
