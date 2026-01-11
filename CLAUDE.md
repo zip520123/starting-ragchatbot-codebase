@@ -22,6 +22,18 @@ cd backend && uv run uvicorn app:app --reload --port 8000
 # Or use the shell script from root
 ./run.sh
 
+# Code Quality Tools
+./format.sh              # Format code with isort and black
+./lint.sh                # Run flake8 linter
+./typecheck.sh           # Run mypy type checker
+./quality-check.sh       # Run all quality checks (CI-ready)
+
+# Individual quality commands
+uv run black backend/ main.py           # Format with black
+uv run isort backend/ main.py           # Sort imports
+uv run flake8 backend/ main.py          # Lint code
+uv run mypy backend/ main.py            # Type check
+
 # Git commands
 git status
 git add .
