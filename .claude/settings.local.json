@@ -16,7 +16,23 @@
       "Bash(gh auth status:*)",
       "Bash(gh repo fork:*)",
       "Bash(git remote set-url:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git log:*)",
+      "Bash(git remote add:*)",
+      "Bash(git fetch:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "say 'All done'"
+          }
+        ]
+      }
     ]
   }
 }
